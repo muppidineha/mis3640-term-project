@@ -261,7 +261,7 @@ def indicators(v, v2):
                 [
                     html.Div(
                         [
-                            html.H4("Today is"),
+                            html.H4("TODAY IS"),
                             html.P(datetime.datetime.today().isoformat()),
                         ]
                     ),
@@ -277,7 +277,7 @@ def indicators(v, v2):
             html.Div(
                 [
                     html.Div(
-                        [html.H4("Stock Price"), html.P(data.tail(1)["Close"].iloc[0])]
+                        [html.H4("STOCK PRICE"), html.P(data.tail(1)["Close"].iloc[0])]
                     ),
                 ],
                 className="kpi2",
@@ -296,15 +296,15 @@ def indicators(v, v2):
                     #         # html.P(f"{data.tail(1)['Close'].iloc[0]:02}")   #how to remove the extra 0decimals
                     #     ]),
                     html.Div(
-                        [html.H4("Price To Book"), html.P(df_info["priceToBook"])]
+                        [html.H4("PRICE TO BOOK"), html.P(df_info["priceToBook"])]
                     ),
                     html.Div(
                         [
-                            html.H4("Enterprise to Ebitda"),
+                            html.H4("ENTERPRISE TO EBITDA"),
                             html.P(df_info["enterpriseToEbitda"]),
                         ]
                     ),
-                    html.Div([html.H4("Beta"), html.P(df_info["beta"])]),
+                    html.Div([html.H4("BETA"), html.P(df_info["beta"])]),
                 ],
                 className="kpi",
             )
@@ -312,7 +312,7 @@ def indicators(v, v2):
     )
 
     tickerdata = yf.Ticker(v2)
-    tickerinfo = tickerdata.info
+    # tickerinfo = tickerdata.info
 
     # today = datetime.datetime.today().isoformat()
 

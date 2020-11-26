@@ -2,12 +2,15 @@
     margin: 0;
     padding:0;
     box-sizing: 0;
-    font-family: 'Tahoma-bold', sans-serif;
+    font-family: 'Trebuchet MS';
+    font-size: 14pt;
    }
    
    body{
        height:100vh;
        overflow: hidden;
+       color: olivedrab;
+       font-family: 'Trebuchet MS';
    }
    
    .container{
@@ -18,7 +21,7 @@
    .content{
        margin-left: 20%;
        height: 100vh;
-       overflow: hidden;
+       overflow-y: scroll;
    }
    
    
@@ -37,18 +40,20 @@
    .start{
        margin-top: 40%;
        margin-bottom: 5%;
-       color: aliceblue;
+       color: white;
    }
    
    .dash-dropdown{
        width:70%;
+       color: olivedrab;
    }
    .header{
        height: 15vh;
-       font-size: 42pt;
+       font-size: 44pt;
        position: relative;
        display: flex;
        justify-content: space-evenly;
+       color: olivedrab;
    }
    
    #logo{
@@ -61,12 +66,15 @@
    
    #ticker{
        align-self: center;
-       font-size: 30px;
+       font-size: 50px;
+       font-family: 'Trebuchet MS';
    }
    
    
    .decription_ticker{
        margin: 15px 15px;
+       font-size: 20pt;
+       font-family: 'Trebuchet MS'
    }
    
    .Buttons{
@@ -82,7 +90,7 @@
        width:6.9vw;
        height:2vw;
        overflow: hidden;
-       border-radius: 5%;
+       border-radius: 12pt;
        border: 2px solid olivedrab;;
        cursor: pointer;
        background-color:white;
@@ -148,25 +156,32 @@
     flex-direction: row;
     align-content: center;
     align-items: center;
+    justify-content: center;
+    font-size: 14pt;
+    font-family: 'Trebuchet MS';
+    color: white;
 }
    
    
    .kpi div {
-       width:30%;
+       width:27%;
        height:10vh;
        overflow: hidden;
-       background-color: rgb(163, 146, 146);
+       background-color: olivedrab;
        justify-items: center;
        justify-content: center;
        align-content: center;
        text-align: center;
+       font-size: 14pt;
+       font-family: 'Trebuchet MS';
+       color: white;
    }
 
    .kpi2 div {
-    width:30%;
+    width:27%;
     height:10vh;
     overflow: hidden;
-    background-color: rgb(163, 146, 146);
+    background-color:olivedrab;
     justify-items: center;
     justify-content: center;
     align-content: center;
@@ -176,14 +191,14 @@
 
    .kpi div P {
        margin-top: 17px;
-       color:rgba(255, 255, 255, 0.89);
+       color:white;
        font-weight: bold;
        font-size: 30px;
    }
 
    .kpi2 div P {
     margin-top: 17px;
-    color:rgba(255, 255, 255, 0.89);
+    color: white;
     font-weight: bold;
     font-size: 30px;
 }
