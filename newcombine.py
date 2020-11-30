@@ -1,4 +1,4 @@
-# new version of combine.py
+# new version of combine.py  -11/29/20
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -17,8 +17,6 @@ import json
 import csv
 import datetime
 from time import localtime, strftime
-
-# from pull_news import get_news
 from alpha_vantage.techindicators import TechIndicators
 from alpha_vantage.timeseries import TimeSeries
 import numpy as np
@@ -28,14 +26,18 @@ from datetime import datetime as dt, timedelta
 from datetime import datetime
 import os
 
+
 # For historical stock price
 def get_stock_price_fig(df):
     fig = go.Figure()
     fig.add_trace(go.Scatter(mode="lines", x=df["Date"], y=df["Close"]))
+    fig.update_layout(
+        title="Historical Stock Price", xaxis_title="Date", yaxis_title="Stock Price"
+    )
     return fig
 
 
-# For news
+# For stock news
 # https://developer.nytimes.com/
 api_key = "PS5qFn9MAQYV3BPjSoHBx5a4UbqdmVcH"
 
@@ -58,25 +60,23 @@ def get_news(dropdown_tickers):
 # pprint.pprint(pull_news('APLE'))
 
 # For comparing stock
-# List of IEX API KEY (in case: the API key hace exceeded the allotted message quota)
+# List of IEX API KEY (in case: the API key have exceeded the allotted message quota)
 # os.environ["IEX_API_KEY"]="pk_0340abbe62c04378a334752d0519e345"
-os.environ["IEX_API_KEY"] = "pk_e695aedcc1574bd8931f218f8f4057a9"
-# os.environ["IEX_API_KEY"]="pk_b21816e2e89d4e5d86834f242347d82a"
+# os.environ["IEX_API_KEY"]="pk_e695aedcc1574bd8931f218f8f4057a9"
+os.environ["IEX_API_KEY"] = "pk_b21816e2e89d4e5d86834f242347d82a"
 
-app = dash.Dash(  # app = dash.Dash(
-    external_stylesheets=[
-        '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">'
-    ]
-)
-app.css.config.serve_locally = True
-app.scripts.config.serve_locally = True
+app = dash.Dash()
+# app = dash.Dash(external_stylesheets=['<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">'])
+# app.css.config.serve_locally = True
+# app.scripts.config.serve_locally = True
 
 app.layout = html.Div(
     [
         # Navigation to different tabs
         html.Div(
             [
-                html.P("Select the company", className="start"),
+                html.P("Welcome to Our Financial Dashboard", className="start"),
+                # html.P ("Select the company", className="start"),
                 dcc.Dropdown("dropdown_tickers", placeholder="Please select a stock"),
                 html.Div(
                     [
@@ -90,23 +90,19 @@ app.layout = html.Div(
                     ],
                     className="Buttons",
                 ),
-                html.Div(
-                    [
-                        html.Button("Compare", className="compare-btn", id="compare"),
-                    ],
-                    className="Buttons1",
-                ),
+                html.Div([html.P("Please refresh the dashboard", className="start2")]),
                 # Dashboard Title
-                html.Div(
-                    [
-                        html.H1(children="Stock Price Dashboard"),
-                    ],
-                    className="button2",
-                ),
+                # html.Div(
+                #     [
+                #         html.H1(children="Stock Price Dashboard"),
+                #     ],
+                #     className="button2",
+                # ),
                 dcc.Dropdown(
                     id="dropdown_tickers_1",
                     multi=True,
-                    placeholder="Please Select Stocks",
+                    placeholder="Please select stocks",
+                    className="thespace",
                 ),
                 html.Div(
                     [
@@ -122,7 +118,19 @@ app.layout = html.Div(
                             initial_visible_month=dt.today().date(),
                             end_date=dt.today().date(),
                         ),
-                        html.Button(id="update-button", n_clicks=0, children="Compare"),
+                        # html.Button(id="update-button", n_clicks=0, children="Compare"),
+                        # html.Button("Compare", className = "compare-btn",id="compare", n_clicks=0),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Compare",
+                                    className="compare-btn",
+                                    n_clicks=0,
+                                    id="compare",
+                                )
+                            ],
+                            className="Buttons1",
+                        ),
                     ],
                     className="row",
                 ),
@@ -139,11 +147,17 @@ app.layout = html.Div(
                     ],
                     className="header",
                 ),
+                html.Div(id="sector", className="sector_ticker"),
                 html.Div(id="description", className="decription_ticker"),
+                # html.Div([
+                # html.P("Welcome to our", className="Welc1"),
+                # html.P("Financial Dashborad"),
+                # ], className="homepage"),
                 html.Div(
                     [
                         html.Div([], id="graphs-content"),
                         html.Div([], id="data-plot"),
+                        # html.Div([],id ="news-content"),
                     ],
                     id="main-content",
                 ),
@@ -156,13 +170,6 @@ app.layout = html.Div(
             ],
             className="content",
         ),
-        # html.Div(
-        #     [
-        #         html.P("Welcome to our", className="welc1"),
-        #         html.P("Financial Dashboard"),
-        #     ],
-        #     className="homepage",
-        # ),
     ],
     className="container",
 )
@@ -211,6 +218,7 @@ def symbols_names_callback(value):
 # include Output and Input
 @app.callback(
     [
+        Output("sector", "children"),
         Output("description", "children"),
         Output("logo", "src"),
         Output("ticker", "children"),
@@ -232,23 +240,26 @@ def update_data(v):
     df = df[
         [
             "sector",
-            "fullTimeEmployees",
-            "sharesOutstanding",
-            "priceToBook",
+            # "fullTimeEmployees",
+            # "sharesOutstanding",
+            # "priceToBook",
             "logo_url",
             "longBusinessSummary",
             "shortName",
         ]
     ]
 
+    companysector = df["sector"].values[0]
+
     return (
+        f"Sector: {companysector}",
         df["longBusinessSummary"].values[0],
         df["logo_url"].values[0],
         df["shortName"].values[0],
     )
 
 
-# Stock Price Button
+# Stock Historical Price Button
 @app.callback(
     [Output("graphs-content", "children")],
     [Input("stock", "n_clicks")],
@@ -261,9 +272,11 @@ def stock_prices(v, v2):
         raise PreventUpdate
 
     df = yf.download(v2)
+
     df.reset_index(inplace=True)
 
     fig = get_stock_price_fig(df)
+
     # print(fig)
 
     return [dcc.Graph(figure=fig)]
@@ -284,7 +297,7 @@ def indicators(v, v2):
 
     df_calendar = ticker.calendar.T
     df_info = pd.DataFrame.from_dict(ticker.info, orient="index").T
-    df_info.to_csv("test.csv")
+    # df_info.to_csv("test.csv")
     df_info = df_info[
         [
             "priceToBook",
@@ -371,7 +384,7 @@ def indicators(v, v2):
                         ]
                     ),
                 ],
-                className="kpi",  # create new class
+                className="kpi",
             )
         ]
     )
@@ -379,12 +392,13 @@ def indicators(v, v2):
     tickerdata = yf.Ticker(v2)
     tickerinfo = tickerdata.info
 
-    return [html.Div([tbl, tbl2], id="graphs-content")], None  # add new tbls here
+    return [html.Div([tbl, tbl2], id="graphs-content")], None
 
 
 # News Button
 @app.callback(
     [Output("news-content", "children"), Output("indicators", "n_clicks")],
+    # Output("news-content", "children"),
     [Input("news_search", "n_clicks")],
     [State("dropdown_tickers", "value")],
 )
@@ -407,6 +421,7 @@ def news_search(v, v2):
             )
         )
     return html_string, None
+    # return [html.Div([html_string], id="grap-content")], None
 
 
 # Comparing Stocks
@@ -423,9 +438,67 @@ class StocksSelectedError(Exception):
     pass
 
 
+# @app.callback(Output('data-plot', 'children'),
+#               [Input('compare', 'n_clicks')],
+# )
+# def open_compare(n_clicks):
+#     if n_clicks == None:
+#         raise PreventUpdate
+
+
+# @app.callback(Output('compare', 'children'),
+#               [Input('compare', 'n-clicks')])
+# def symbols_names_callback(n_clicks):
+#     @app.callback(Output('data-plot', 'children'),
+#                 [Input('update-button', 'n_clicks')],
+#                 [State('dropdown_tickers_1', 'value'),
+#                 State('date-picker-range', 'start_date'),
+#                 State('date-picker-range', 'end_date')])
+
+#     def graph_callback(n_clicks, selected_symbols, start_date, end_date):
+#         # Defining an empty layout
+#         # empty_layout = dict(data=[], layout=go.Layout(title=f' closing prices',
+#         #                                               xaxis={'title': 'Date'},
+#         #                                               yaxis={'title': 'Closing Price'},
+#         #                                               font={'family': 'verdana', 'size': 15, 'color': '#606060'}))
+
+#         if n_clicks != 0:
+#             empty_layout = dict(data=[], layout=go.Layout(title=f' closing prices',
+#                                                     xaxis={'title': 'Date'},
+#                                                     yaxis={'title': 'Closing Price'},
+#                                                     font={'family': 'verdana', 'size': 15, 'color': '#606060'}))
+#                 # Getting the stock data
+#             df_list = [web.DataReader(symbol, 'iex', start_date, end_date) for symbol in selected_symbols]
+
+#                 # Naming the DataFrames
+#             for i in range(0, len(df_list)):
+#                 df_list[i].name = selected_symbols[i]
+
+#                 # Formatting a graph title
+#             symbols = ""
+#             for symbol in selected_symbols:
+#                 symbols = symbols + "'" + symbol + "', "
+#             symbols = symbols[:-2]
+
+#                 # Making a list of all the available dates in the range selected
+#             dates = [i for i in df_list[0].index]
+
+#                 # Creating the graph objects
+#             data = [go.Scatter(x=dates, y=df['close'], mode='lines', name=df.name) for df in df_list]
+#             layout = go.Layout(title=f'{symbols} Closing Prices',
+#                                 xaxis={'title': 'Date'},
+#                                 yaxis={'title': 'Stock Closing Price'},
+#                                 font={'family': 'verdana', 'size': 15, 'color': '#606060'})
+#             fig = dict(data=data, layout=layout)
+#             return [dcc.Graph(figure=fig)]
+
+#         else:
+#             raise PreventUpdate
+
+
 @app.callback(
     Output("data-plot", "children"),
-    [Input("update-button", "n_clicks")],
+    [Input("compare", "n_clicks")],
     [
         State("dropdown_tickers_1", "value"),
         State("date-picker-range", "start_date"),
@@ -439,9 +512,7 @@ def graph_callback(n_clicks, selected_symbols, start_date, end_date):
     #                                               yaxis={'title': 'Closing Price'},
     #                                               font={'family': 'verdana', 'size': 15, 'color': '#606060'}))
 
-    if n_clicks == 0:
-        raise PreventUpdate
-    else:
+    if n_clicks != 0:
         empty_layout = dict(
             data=[],
             layout=go.Layout(
@@ -483,6 +554,42 @@ def graph_callback(n_clicks, selected_symbols, start_date, end_date):
         )
         fig = dict(data=data, layout=layout)
         return [dcc.Graph(figure=fig)]
+
+    else:
+        raise PreventUpdate
+
+    # if n_clicks == 0:
+    #     raise PreventUpdate
+    # else:
+    # if n_clicks > 1:
+    # empty_layout = dict(data=[], layout=go.Layout(title=f' closing prices',
+    #                                           xaxis={'title': 'Date'},
+    #                                           yaxis={'title': 'Closing Price'},
+    #                                           font={'family': 'verdana', 'size': 15, 'color': '#606060'}))
+    #     # Getting the stock data
+    # df_list = [web.DataReader(symbol, 'iex', start_date, end_date) for symbol in selected_symbols]
+
+    #     # Naming the DataFrames
+    # for i in range(0, len(df_list)):
+    #     df_list[i].name = selected_symbols[i]
+
+    #     # Formatting a graph title
+    # symbols = ""
+    # for symbol in selected_symbols:
+    #     symbols = symbols + "'" + symbol + "', "
+    # symbols = symbols[:-2]
+
+    #     # Making a list of all the available dates in the range selected
+    # dates = [i for i in df_list[0].index]
+
+    #     # Creating the graph objects
+    # data = [go.Scatter(x=dates, y=df['close'], mode='lines', name=df.name) for df in df_list]
+    # layout = go.Layout(title=f'{symbols} Closing Prices',
+    #                        xaxis={'title': 'Date'},
+    #                        yaxis={'title': 'Stock Closing Price'},
+    #                        font={'family': 'verdana', 'size': 15, 'color': '#606060'})
+    # fig = dict(data=data, layout=layout)
+    # return [dcc.Graph(figure=fig)]
 
     # # If already initialized
     # if n_clicks > 0:
