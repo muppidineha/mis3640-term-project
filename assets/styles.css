@@ -7,7 +7,7 @@
     /* width: auto; */
     /* height: 100%; */
    }
-   
+
    body{
        height:100vh;
        font-family: 'Trebuchet MS';
@@ -15,7 +15,7 @@
        font-size: 13pt;
        overflow: hidden;
    }
-/* 
+/*
    .decription_ticker{
        height: 100%;
        overflow-y: scroll;
@@ -24,13 +24,12 @@
    /* .welc1{
     font-family: 'Trebuchet MS';
     color: olivedrab;
-    font-size: 34pt; 
+    font-size: 34pt;
     text-align: center; */
     /* padding-right: 372px; */
     /* padding-left: 682px; */
     /* padding-top: 18px;
     white-space: nowrap;
-    
 } */
 
     /* .sector_ticker{
@@ -56,11 +55,11 @@
     padding-top: 2.5vh;
     padding-bottom: 2vh;
 }
-    
+
 }
 
 
-/* 
+/*
    #sector{
     align-self: center;
     font-size: 44px;
@@ -72,7 +71,7 @@
 
    .homepage{
         color: olivedrab;
-        font-size: 70pt; 
+        font-size: 70pt;
         text-align: center;
         justify-content: center;
         align-items: center;
@@ -81,14 +80,14 @@
         white-space: nowrap;
         font-family: 'Trebuchet MS';
    }
-   
+
    .container{
        position: relative;
        display: flex;
        overflow: hidden;
        /* overflow-y: scroll; */
    }
-   
+
    .content{
        margin-left: 20%;
        height: 100vh;
@@ -100,8 +99,8 @@
     height: 100vh;
     overflow: hidden;
 }
-   
-   
+
+
    .Navigation{
     position:fixed;
     width:20%;
@@ -113,7 +112,7 @@
     background-color:olivedrab;
     font-family: 'Trebuchet MS';
 }
-   
+
     .row{
         font-family: 'Trebuchet MS';
         /* justify-content: center;
@@ -137,12 +136,12 @@
    }
 
    .start2{
-    margin-top: 82%;
+    margin-top: 52%;
     color: white;
     font-size: 17pt;
     font-family: 'Trebuchet MS';
 }
-   
+
    .dash-dropdown{
        width:70%;
    }
@@ -156,7 +155,7 @@
        color:olivedrab;
        font-family: 'Trebuchet MS';
    }
-   
+
    #logo{
        position: absolute;
        width: 70;
@@ -164,20 +163,20 @@
        align-self: center;
        right: 5%;
    }
-   
+
    #ticker{
        align-self: center;
        font-size: 44px;
        font-family: 'Trebuchet MS';
    }
-   
-   
+
+
    .decription_ticker{
        margin: 15px 15px;
        font-size: 18pt;
        font-family: 'Trebuchet MS';
    }
-   
+
    .Buttons{
        margin-top:20%;
        width: 100%;
@@ -202,7 +201,7 @@
        font-size: 13pt;
        font-family: 'Trebuchet MS';
    }
-   
+
    .Buttons1{
     margin-top:20%;
     width: 100%;
@@ -233,7 +232,7 @@
   width: 100%;
   display: flex;
   justify-content: space-around;
-  
+
   }
 
   .button2 button{
@@ -254,7 +253,7 @@
   position: relative;
   display: flex;
   justify-content: space-around;
-  color: white;  
+  color: white;
   }
 
   .button3 button{
@@ -273,27 +272,25 @@
    #main-content{
        margin-top: 6%;
    }
-   
+
    .graphs-content{
        margin-top: 50%;
    }
-   
+
    /* .graph-dounut{
        display: 'inline-block';
        width:20vw;
        height: 20vh;
    }
-   
    .dounuts{
        display:flex;
        overflow:hidden;
        flex-direction: row;;
    }
-   
    .dounuts div {
        width: 50%;
    } */
-   
+
    .kpi{
        margin:5% 5%;
        display:flex;
@@ -313,8 +310,8 @@
     align-items: center;
     /* width: 70%; */
 }
-   
-   
+
+
    .kpi div {
        width:30%;
        height:10vh;
@@ -337,7 +334,7 @@
     align-items: center;
     text-align: center;
 }
-   
+
 
    .kpi div P {
        margin-top: 17px;
@@ -352,7 +349,7 @@
     font-weight: bold;
     font-size: 30px;
 }
-   
+
    .kpi div H4 {
        margin-top: 10px;
    }
@@ -360,7 +357,7 @@
    .kpi2 div H4 {
     margin-top: 10px;
 }
-   
+
    /* #floating bar */
    .modebar{
        display: none !important;
@@ -391,218 +388,7 @@
 
 
 
-
-
-
-
-
-
-/* *{
-    margin: 0;
-    padding:0;
-    box-sizing: 0;
-    font-family: 'Trebuchet MS';
-    font-size: 14pt;
-   }
-   
-   body{
-       height:100vh;
-       overflow: hidden;
-       color: olivedrab;
-       font-family: 'Trebuchet MS';
-   }
-   
-   .container{
-       position: relative;
-       display: flex;
-   }
-   
-   .content{
-       margin-left: 20%;
-       height: 100vh;
-       overflow-y: scroll;
-   }
-   
-   
-   .Navigation{
-       position:fixed;
-       width:20%;
-       height:100vh;
-       display:flex;
-       justify-content: start;
-       align-items: center;
-       flex-direction: column;
-       background-color:olivedrab;
-   }
-   
-   
-   .start{
-       margin-top: 40%;
-       margin-bottom: 5%;
-       color: white;
-   }
-   
-   .dash-dropdown{
-       width:70%;
-       color: olivedrab;
-   }
-   .header{
-       height: 15vh;
-       font-size: 44pt;
-       position: relative;
-       display: flex;
-       justify-content: space-evenly;
-       color: olivedrab;
-   }
-   
-   #logo{
-       position: absolute;
-       width: 60;
-       height:60px;
-       align-self: center;
-       right: 5%;
-   }
-   
-   #ticker{
-       align-self: center;
-       font-size: 50px;
-       font-family: 'Trebuchet MS';
-   }
-   
-   
-   .decription_ticker{
-       margin: 15px 15px;
-       font-size: 20pt;
-       font-family: 'Trebuchet MS'
-   }
-   
-   .Buttons{
-       margin-top:20%;
-       width: 100%;
-       position: relative;
-       display: flex;
-       justify-content: space-around;
-       
-   }
-   
-   .Buttons button{
-       width:6.9vw;
-       height:2vw;
-       overflow: hidden;
-       border-radius: 12pt;
-       border: 2px solid olivedrab;;
-       cursor: pointer;
-       background-color:white;
-       color:olivedrab;
-   }
-   
-   .Buttons1{
-    margin-top:20%;
-    width: 100%;
-    position: relative;
-    display: flex;
-    justify-content: space-around;
-    
-}
-    .Buttons1 button{
-    width:6.9vw;
-    height:2vw;
-    overflow: hidden;
-    border-radius: 5%;
-    border: none;
-    cursor: pointer;
-    background-color:white;
-    color:olivedrab;
-}
-   #main-content{
-       margin-top: 6%;
-   }
-   
-   .graphs-content{
-       margin-top: 50%;
-   }
-   
-   .graph-dounut{
-       display: 'inline-block';
-       width:20vw;
-       height: 20vh;
-   }
-   
-   .dounuts{
-       display:flex;
-       overflow:hidden;
-       flex-direction: row;;
-   }
-   
-   .dounuts div {
-       width: 50%;
-   }
-   
-   .kpi{
-       margin:5% 5%;
-       display:flex;
-       justify-content: space-between;
-       flex-direction: row;
-   }
-   .kpi2{
-    margin:5% 5%;
-    display:flex;
-    justify-content: space-between;
-    flex-direction: row;
-    align-content: center;
-    align-items: center;
-    justify-content: center;
-    font-size: 14pt;
-    font-family: 'Trebuchet MS';
-    color: white;
-}
-   
-   
-   .kpi div {
-       width:27%;
-       height:10vh;
-       overflow: hidden;
-       background-color: olivedrab;
-       justify-items: center;
-       justify-content: center;
-       align-content: center;
-       text-align: center;
-       font-size: 14pt;
-       font-family: 'Trebuchet MS';
-       color: white;
-   }
-   .kpi2 div {
-    width:27%;
-    height:10vh;
-    overflow: hidden;
-    background-color:olivedrab;
-    justify-items: center;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    text-align: center;}
-   
-   .kpi div P {
-       margin-top: 17px;
-       color:white;
-       font-weight: bold;
-       font-size: 30px;
-   }
-   .kpi2 div P {
-    margin-top: 17px;
-    color: white;
-    font-weight: bold;
-    font-size: 30px;
-}
-   
-   .kpi div H4 {
-       margin-top: 10px;
-   }
-   .kpi2 div H4 {
-    margin-top: 10px;
-}
-   
-   /* #floating bar */
+/* #floating bar */
    .modebar{
-       display: none !important;
-   } */
+    display: none !important;
+} */

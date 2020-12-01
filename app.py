@@ -6,50 +6,83 @@ import yfinance as yf
 import plotly.graph_objects as go
 import pandas as pd
 from dash.exceptions import PreventUpdate
-import dash_table
-import plotly.express as px
 import requests
-from io import StringIO
-from bs4 import BeautifulSoup
-import re
-import json
-import csv
-import datetime
 from time import localtime, strftime
-from pull_news import get_news
-from alpha_vantage.techindicators import TechIndicators
-from alpha_vantage.timeseries import TimeSeries
 import numpy as np
-import pandas as pd
 import pandas_datareader.data as web
-from datetime import datetime as dt, timedelta
-from datetime import datetime
+from datetime import datetime as dt
 import os
 
 
-def get_stock_price_fig(df):
+# For historical stock price
+def stock_price_figure(df):
     fig = go.Figure()
     fig.add_trace(go.Scatter(mode="lines", x=df["Date"], y=df["Close"]))
+    fig.update_layout(
+        title="Historical Stock Price", xaxis_title="Date", yaxis_title="Stock Price"
+    )
     return fig
 
 
-# os.environ["IEX_API_KEY"]="pk_0340abbe62c04378a334752d0519e345"  #need a new one (bc it have exceeded the allotted message quota)
-os.environ["IEX_API_KEY"] = "pk_e695aedcc1574bd8931f218f8f4057a9"
+# For stock news
+# https://developer.nytimes.com/
+api_key = "PS5qFn9MAQYV3BPjSoHBx5a4UbqdmVcH"
 
-app = dash.Dash(
-    external_stylesheets=[
-        '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">'
+
+def get_companyname(stocksymbol):
+    """
+    Use yahoo finance to convert symbol into company name
+    """
+    url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(
+        stocksymbol
+    )
+    result = requests.get(url).json()
+    for i in result["ResultSet"]["Result"]:
+        if i["symbol"] == stocksymbol:
+            return i["name"]
+
+
+def pull_news(dropdown_tickers):
+    """
+    Pull news from New York Times
+    """
+    symbols = get_companyname(dropdown_tickers)
+    sort = "relevance"
+    url = f"https://api.nytimes.com/svc/search/v2/articlesearch.json?q={symbols}&api-key={api_key}&sort={sort}"
+    request = requests.get(url).json()["response"]["docs"]
+    if len(request) > 0:
+        return request
+    return "No News Found"
+
+
+def get_news(dropdown_tickers):
+    """
+    Take the news pull from the New York Times and Return the abstract, lead paragraph, publication date, and website url for each news
+    """
+    news = pull_news(dropdown_tickers)
+    news = [
+        (n["abstract"], n["lead_paragraph"], n["pub_date"], n["web_url"]) for n in news
     ]
-)
-app.css.config.serve_locally = True
-app.scripts.config.serve_locally = True
+    return news
 
+
+# For comparing stock
+# List of IEX API KEY (in case: the API key have exceeded the allotted message quota)
+# os.environ["IEX_API_KEY"]="pk_0340abbe62c04378a334752d0519e345" [USED]
+# os.environ["IEX_API_KEY"]="pk_e695aedcc1574bd8931f218f8f4057a9" [USED]
+os.environ["IEX_API_KEY"] = "pk_093ca3074be845c1a1186d470456dadc"
+# os.environ["IEX_API_KEY"] = "pk_b21816e2e89d4e5d86834f242347d82a" [NOT USED]
+
+
+# Dashboard Content and Layout:
+app = dash.Dash()
+server = app.server
 app.layout = html.Div(
     [
-        # Navigation to different tabs
+        # Navigation (on the left side)
         html.Div(
             [
-                html.P("Select the company", className="start"),
+                html.P("Welcome to Our Financial Dashboard", className="start"),
                 dcc.Dropdown("dropdown_tickers", placeholder="Please select a stock"),
                 html.Div(
                     [
@@ -59,50 +92,45 @@ app.layout = html.Div(
                         html.Button(
                             "Indicators", className="indicators-btn", id="indicators"
                         ),
-                        html.Button("News", className="news-btn", id="news_search"),
+                        html.Button("News", className="news-btn", id="stocknews"),
                     ],
                     className="Buttons",
                 ),
-                html.Div(
-                    [
-                        html.Button("Compare", className="compare-btn", id="compare"),
-                    ],
-                    className="Buttons1",
-                ),
-                # Dashboard Title
-                html.Div(
-                    [
-                        html.H1(children="Stock Price Dashboard"),
-                    ],
-                    className="button2",
-                ),
+                html.Div([html.P("Please refresh the dashboard", className="start2")]),
                 dcc.Dropdown(
                     id="dropdown_tickers_1",
                     multi=True,
-                    placeholder="Please Select Stocks",
+                    placeholder="Please select stocks",
+                    className="thespace",
                 ),
                 html.Div(
                     [
                         html.H3("Select a start and end date:"),
                         dcc.DatePickerRange(
-                            id="date-picker-range",
-                            # min_date_allowed=dt(2015, 1, 1),
-                            # max_date_allowed=dt.today().date() - timedelta(days=1),
-                            # initial_visible_month=dt.today().date() - timedelta(days=1),
-                            # end_date=dt.today().date() - timedelta(days=1)),
+                            id="date-range",
                             min_date_allowed=dt(2015, 1, 1),
                             max_date_allowed=dt.today(),
                             initial_visible_month=dt.today().date(),
                             end_date=dt.today().date(),
                         ),
-                        html.Button(id="update-button", n_clicks=0, children="Submit"),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Compare",
+                                    className="compare-btn",
+                                    n_clicks=0,
+                                    id="compare",
+                                )
+                            ],
+                            className="Buttons1",
+                        ),
                     ],
                     className="row",
                 ),
-                # html.Div([dcc.Graph(id='data-plot')], className='row')
             ],
             className="Navigation",
         ),
+        # Dashboard main content
         html.Div(
             [
                 html.Div(
@@ -112,22 +140,16 @@ app.layout = html.Div(
                     ],
                     className="header",
                 ),
+                html.Div(id="sector", className="sector_ticker"),
                 html.Div(id="description", className="decription_ticker"),
                 html.Div(
                     [
                         html.Div([], id="graphs-content"),
+                        html.Div([], id="data-plot"),
                     ],
                     id="main-content",
                 ),
                 html.Div([], id="news-content", className="new_ticker"),
-                html.Div(
-                    [
-                        html.Div([dcc.Graph(id="data-plot")], className="row"),
-                    ],
-                    id="compare-content",
-                ),
-                # html.Div(id ="compare-content", className="compare_ticker"),
-                # html.Div([dcc.Graph(id='data-plot')], className='row'),
             ],
             className="content",
         ),
@@ -135,21 +157,18 @@ app.layout = html.Div(
     className="container",
 )
 
-# Getting the stock names & symbols and also cleaning the data
-symbols = (
-    web.get_iex_symbols()
-)  # TODO: EXPLORE THIS API TO REMOVE STOCK THAT IS LESS WELL KNOWN #https://iexcloud.io/docs/api/#symbols
+# Getting the stock names & symbols & remove stock with long name [more information on #https://iexcloud.io/docs/api/#symbols]
+symbols = web.get_iex_symbols()
 symbols_list = pd.DataFrame({"symbol": symbols["symbol"], "name": symbols["name"]})
 symbols_list["name"].replace("", np.nan, inplace=True)
 symbols_list["symbol"].replace("", np.nan, inplace=True)
 symbols_list.dropna(inplace=True)
-
-# Removing stocks with very long names
 mask = symbols_list["name"].str.len() < 40
 symbols_list = symbols_list.loc[mask]
 symbols_list = symbols_list.reset_index(drop=True)
 
 
+# For Part 1 dropdown
 @app.callback(
     Output("dropdown_tickers", "options"), [Input("dropdown_tickers", "value")]
 )
@@ -158,11 +177,10 @@ def symbols_names_callback(value):
         {"label": symbols_list.iloc[i]["name"], "value": symbols_list.iloc[i]["symbol"]}
         for i in range(0, len(symbols_list))
     ]
-
     return options_list
 
 
-# Callback functions for updating the dashboard components
+# For Part 2 dropdown
 @app.callback(
     Output("dropdown_tickers_1", "options"), [Input("dropdown_tickers_1", "value")]
 )
@@ -171,58 +189,59 @@ def symbols_names_callback(value):
         {"label": symbols_list.iloc[i]["name"], "value": symbols_list.iloc[i]["symbol"]}
         for i in range(0, len(symbols_list))
     ]
-
     return options_list
 
 
-# create a callback - bring Yahoo Finance API
-# include Output and Input
+# For bring Yahoo Finance API and main content
 @app.callback(
     [
+        Output("sector", "children"),
         Output("description", "children"),
         Output("logo", "src"),
         Output("ticker", "children"),
     ],
     [Input("dropdown_tickers", "value")],
 )
-
-# create function that is associate with the function
-# when dropdown_tickers is in action
-def update_data(v):
-    """Take the Input and return Business Summary from Yahoo Finance API. If there is not value inputed --> you want to prevent update"""
+def basic_info(v):
+    """
+    Take the Input and return Business Summary from Yahoo Finance API. If there is not value inputed --> prevent update
+    """
     if v == None:
         raise PreventUpdate
+    else:
+        ticker = yf.Ticker(v)
+        inf = ticker.info
 
-    ticker = yf.Ticker(v)
-    inf = ticker.info
+        df = pd.DataFrame.from_dict(inf, orient="index").T
+        # df = df[
+        #     [
+        #         "sector",
+        #         "logo_url",
+        #         "longBusinessSummary",
+        #         "shortName",
+        #     ]
+        # ]
 
-    df = pd.DataFrame.from_dict(inf, orient="index").T
-    df = df[
-        [
-            "sector",
-            "fullTimeEmployees",
-            "sharesOutstanding",
-            "priceToBook",
-            "logo_url",
-            "longBusinessSummary",
-            "shortName",
-        ]
-    ]
+        companysector = df["sector"].values[0]
 
-    return (
-        df["longBusinessSummary"].values[0],
-        df["logo_url"].values[0],
-        df["shortName"].values[0],
-    )
+        return (
+            f"Sector: {companysector}",
+            df["longBusinessSummary"].values[0],
+            df["logo_url"].values[0],
+            df["shortName"].values[0],
+        )
 
 
-# Stock Price Button
+# For Stock Historical Price Button
 @app.callback(
     [Output("graphs-content", "children")],
     [Input("stock", "n_clicks")],
     [State("dropdown_tickers", "value")],
 )
 def stock_prices(v, v2):
+    """
+    use yahoo finance data to return a graph
+    """
     if v == None:
         raise PreventUpdate
     if v2 == None:
@@ -230,20 +249,20 @@ def stock_prices(v, v2):
 
     df = yf.download(v2)
     df.reset_index(inplace=True)
-
-    fig = get_stock_price_fig(df)
-    # print(fig)
-
+    fig = stock_price_figure(df)
     return [dcc.Graph(figure=fig)]
 
 
-# Indicator Button
+# For Indicator Button
 @app.callback(
     [Output("main-content", "children"), Output("stock", "n_clicks")],
     [Input("indicators", "n_clicks")],
     [State("dropdown_tickers", "value")],
 )
 def indicators(v, v2):
+    """
+    Use Yahoo Finance to return company's stock price, price to book, proft margins, book value, enterprise to EBITDA, short ratio, beta, payout ratio
+    """
     if v == None:
         raise PreventUpdate
     if v2 == None:
@@ -252,19 +271,18 @@ def indicators(v, v2):
 
     df_calendar = ticker.calendar.T
     df_info = pd.DataFrame.from_dict(ticker.info, orient="index").T
-    df_info.to_csv("test.csv")
-    df_info = df_info[
-        [
-            "priceToBook",
-            "profitMargins",
-            "bookValue",
-            "enterpriseToEbitda",
-            "shortRatio",
-            "beta",
-            "payoutRatio",
-            "trailingEps",
-        ]
-    ]
+    # df_info = df_info[
+    #     [
+    #         "priceToBook",
+    #         "profitMargins",
+    #         "bookValue",
+    #         "enterpriseToEbitda",
+    #         "shortRatio",
+    #         "beta",
+    #         "payoutRatio",
+    #         "trailingEps",
+    #     ]
+    # ]
 
     df_calendar["Earnings Date"] = pd.to_datetime(df_calendar["Earnings Date"])
     df_calendar["Earnings Date"] = df_calendar["Earnings Date"].dt.date
@@ -280,7 +298,6 @@ def indicators(v, v2):
                     html.Div(
                         [
                             html.H4("Today is"),
-                            # html.P(datetime.datetime.today().isoformat())
                             html.P(strftime("%Y-%m-%d %H:%M:%S", localtime())),
                         ]
                     ),
@@ -296,8 +313,7 @@ def indicators(v, v2):
         ]
     )
 
-    # FOR STOCK PRICE
-    # Print out the stock price, price to book, Enterprise to EBITDA, and Beta
+    # FOR STOCK PRICE/Statistics
     tbl2 = html.Div(
         [
             html.Div(
@@ -346,14 +362,13 @@ def indicators(v, v2):
 
     tickerdata = yf.Ticker(v2)
     tickerinfo = tickerdata.info
-
     return [html.Div([tbl, tbl2], id="graphs-content")], None
 
 
 # News Button
 @app.callback(
     [Output("news-content", "children"), Output("indicators", "n_clicks")],
-    [Input("news_search", "n_clicks")],
+    [Input("stocknews", "n_clicks")],
     [State("dropdown_tickers", "value")],
 )
 def news_search(v, v2):
@@ -370,135 +385,69 @@ def news_search(v, v2):
                 [
                     html.H1([n[0]], className="title"),
                     html.P(n[1], className="p"),
-                    # html.P(n[2])
+                    html.P(n[2]),
+                    html.P(n[3]),
                 ]
             )
         )
     return html_string, None
 
 
-# Comparing Stocks
-# Custom Error Classes
-class StartDateError(Exception):
-    pass
-
-
-class NoneValueError(Exception):
-    pass
-
-
-class StocksSelectedError(Exception):
-    pass
-
-
+# For Comparing Stocks
 @app.callback(
-    Output("data-plot", "figure"),
-    [Input("update-button", "n_clicks")],
+    Output("data-plot", "children"),
+    [Input("compare", "n_clicks")],
     [
         State("dropdown_tickers_1", "value"),
-        State("date-picker-range", "start_date"),
-        State("date-picker-range", "end_date"),
+        State("date-range", "start_date"),
+        State("date-range", "end_date"),
     ],
 )
 def graph_callback(n_clicks, selected_symbols, start_date, end_date):
-    # Defining an empty layout
-    # empty_layout = dict(data=[], layout=go.Layout(title=f' closing prices',
-    #                                               xaxis={'title': 'Date'},
-    #                                               yaxis={'title': 'Closing Price'},
-    #                                               font={'family': 'verdana', 'size': 15, 'color': '#606060'}))
-
-    if n_clicks == None:
+    """
+    Get stock price of each stock use iex api and return the historical stock price graph
+    """
+    if n_clicks == 0:
         raise PreventUpdate
     else:
         empty_layout = dict(
             data=[],
             layout=go.Layout(
-                title=f" closing prices",
+                title=f" Closing Prices",
                 xaxis={"title": "Date"},
                 yaxis={"title": "Closing Price"},
-                font={"family": "verdana", "size": 15, "color": "#606060"},
+                font={"family": "Trebuchet MS", "size": 15, "color": "#606060"},
             ),
         )
 
-        # # If already initialized
-        # if n_clicks > 0:
-        try:
-            # Error Checking on Inputs
-            if start_date is None or end_date is None or selected_symbols is None:
-                raise NoneValueError(
-                    "ERROR : Start/End date or selected symbols is None!"
-                )
-            if start_date > end_date:
-                raise StartDateError("ERROR : Start date is greater than End date!")
-            if len(selected_symbols) == 0:
-                raise StocksSelectedError("ERROR : No stocks selected!")
+        df_list = [
+            web.DataReader(symbol, "iex", start_date, end_date)
+            for symbol in selected_symbols
+        ]
 
-            # Getting the stock data
-            df_list = [
-                web.DataReader(symbol, "iex", start_date, end_date)
-                for symbol in selected_symbols
-            ]
+        for i in range(0, len(df_list)):
+            df_list[i].name = selected_symbols[i]
 
-            # Naming the DataFrames
-            for i in range(0, len(df_list)):
-                df_list[i].name = selected_symbols[i]
+        symbols = ""
+        for symbol in selected_symbols:
+            symbols = symbols + "'" + symbol + "', "
+        symbols = symbols[:-2]
 
-            # Formatting a graph title
-            symbols = ""
-            for symbol in selected_symbols:
-                symbols = symbols + "'" + symbol + "', "
-            symbols = symbols[:-2]
+        dates = [i for i in df_list[0].index]
 
-            # Making a list of all the available dates in the range selected
-            dates = [i for i in df_list[0].index]
-
-            # Creating the graph objects
-            data = [
-                go.Scatter(x=dates, y=df["close"], mode="lines", name=df.name)
-                for df in df_list
-            ]
-            layout = go.Layout(
-                title=f"{symbols} Closing Prices",
-                xaxis={"title": "Date"},
-                yaxis={"title": "Stock Closing Price"},
-                font={"family": "verdana", "size": 15, "color": "#606060"},
-            )
-            fig = dict(data=data, layout=layout)
-            return fig
-
-        # Exception Handling
-        except StartDateError as e:
-            print(e)
-            return empty_layout
-        except NoneValueError as e:
-            print(e)
-            return empty_layout
-        except StocksSelectedError as e:
-            print(e)
-            return empty_layout
-        except Exception as e:
-            print(e)
-
-        else:
-            return empty_layout
-
-    # start = datetime.strptime(start_date[:10],'%Y-%m-%d')
-    # end = datetime.strptime(end_date[:10],'%Y-%m-%d')
-    # traces = []
-    # iex = "pk_0340abbe62c04378a334752d0519e345"
-    # df = [web.DataReader(symbol, 'iex', start_date, end_date) for symbol in selected_symbols]
-
-    # for i in selected_symbols:
-    #     traces.append({'x':df.index,'y':df['close'],'name':i})
-    # fig = {
-    #     'data':traces,
-    #     'layout':{'title':selected_symbols}
-    # }
-    # return fig
-
-    # start = datetime(start_date[:10],'%Y-%m-%d')
-    # end = datetime(end_date[:10],'%Y-%m-%d')
+        data = [
+            go.Scatter(x=dates, y=df["close"], mode="lines", name=df.name)
+            for df in df_list
+        ]
+        layout = go.Layout(
+            title=f"{symbols} Closing Prices",
+            xaxis={"title": "Date"},
+            yaxis={"title": "Stock Closing Price"},
+            font={"family": "Trebuchet MS", "size": 15, "color": "#606060"},
+        )
+        fig = dict(data=data, layout=layout)
+        return [dcc.Graph(figure=fig)]
 
 
-if __name__ == "__main__":
-    app.run_server(debug=True, port=8055)
+# if __name__ == "__main__":
+#     app.run_server(debug=True, port=8055)
